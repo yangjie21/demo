@@ -1,6 +1,6 @@
 FROM golang:1.12.1-alpine3.9 as build-env
 RUN apk add upx && apk add git
-RUN makdir /go/consignment-service
+RUN mkdir /go/consignment-service
 WORKDIR /go/consignment-service
 
 ENV GOPROXY="https://athens.azurefd.net"
