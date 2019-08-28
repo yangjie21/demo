@@ -1,14 +1,14 @@
 FROM golang:1.12 as builder
+RUN apk add upx && apk add git
+RUN makdir /go/consignment-cli
+WORKDIR /go/consignment-cli
 
-WORKDIR /go/src/github.com/EwanValentine/shippy/consignment-cli
-
+ENV GOPROXY="https://athens.azurefd.net"
+ENV GO111MODULE=on
+RUN go mod download
 COPY . .
 
-RUN go get -u github.com/golang/dep/cmd/dep
-RUN dep init && dep ensure
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo .
-
-
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags "-s -w" -o .
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
@@ -16,7 +16,7 @@ RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 WORKDIR /app
 COPY consignment.json /app/consignment.json
-COPY --from=builder /go/src/github.com/EwanValentine/shippy/consignment-cli/consignment-cli .
+COPY --from=builder /go/consignment-cli/consignment-cli .
 
 ENTRYPOINT ["./consignment-cli", "consignment.json"]
 CMD ["./consignment-cli"]

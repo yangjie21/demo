@@ -1,18 +1,21 @@
 FROM golang:1.12 as builder
+RUN apk add upx && apk add git
+RUN makdir /go/consignment-service
+WORKDIR /go/consignment-service
 
-WORKDIR /go/src/github.com/EwanValentine/shippy/consignment-service
-
+ENV GOPROXY="https://athens.azurefd.net"
+ENV GO111MODULE=on
+RUN go mod download
 COPY . .
 
-RUN go get
-RUN CGO_ENABLED=0 GOOS=linux go build  -o consignment-service -a -installsuffix cgo main.go repository.go handler.go datastore.go
-
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags "-s -w" -o .
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
 
 RUN mkdir /app
 WORKDIR /app
-COPY --from=builder /go/src/github.com/EwanValentine/shippy/consignment-service/consignment-service .
+COPY --from=builder /go/consignment-service/consignment-service .
 
 CMD ["./consignment-service"]
+
