@@ -1,4 +1,4 @@
-FROM golang:1.12 as builder
+FROM golang:1.12.1-alpine3.9 as build-env
 RUN apk add upx && apk add git
 RUN makdir /go/vessel-service
 WORKDIR /go/vessel-service
